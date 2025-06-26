@@ -1,0 +1,20 @@
+# Node modules
+node_modules/
+
+# Env files
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+
+
+# Uploaded files
+uploads/
+
+.vscode/
+
+Hotel_Management_System_API_Documentation.txt
+Project structure.txt
