@@ -24,6 +24,10 @@ class APIFeatures {
       "price",
       "name",
       "description",
+      "roomType",
+      "availability",
+      "pricePerNight",
+      "capacity",
     ];
 
     const where = {};
@@ -84,7 +88,12 @@ class APIFeatures {
 
   sort() {
     if (this.queryString.sort) {
-      const sortBy = this.queryString.sort.split(",").map((el) => [el, "ASC"]);
+      const sortBy = this.queryString.sort.split(",").map((el) => {
+        if (el.startsWith("-")) {
+          return [el.slice(1), "DESC"];
+        }
+        return [el, "ASC"];
+      });
       this.queryOptions.order = sortBy;
     } else {
       this.queryOptions.order = [["createdAt", "DESC"]];

@@ -5,9 +5,11 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 const { connectDB } = require("./config/dbConnection");
-const testRoutes = require("./routes/testRoutes");
-const hotelRoutes = require("./routes/hotelRoutes");
+
 const globalError = require("./middlewares/globalErrorHandler");
+
+//routes
+const allRoutes = require("./routes");
 
 const app = express();
 
@@ -33,8 +35,7 @@ app.use(
 
 // Test route
 app.get("/", (req, res) => res.send("Welcome to Hotel Management API!"));
-app.use("/api/v1/hotels", hotelRoutes);
-app.use("/api/v1", testRoutes);
+allRoutes(app);
 
 // 404 handler
 app.use((req, res, next) => {
