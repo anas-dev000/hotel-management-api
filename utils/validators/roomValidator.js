@@ -1,5 +1,7 @@
 const { body } = require("express-validator");
 const validationMiddleware = require("../../middlewares/validatorMiddleware");
+const Hotel = require("../../models");
+const ApiError = require("../apiError");
 
 const validateCreateRoom = [
   body("name")
@@ -38,7 +40,13 @@ const validateCreateRoom = [
     .notEmpty()
     .withMessage("Hotel ID is required")
     .isUUID()
-    .withMessage("Hotel ID must be a valid UUID"),
+    .withMessage("Hotel ID must be a valid UUID")
+    .custom(async (hotelId) => {
+      const hotel = await Hotel.findByPk(hotelId);
+      if (!hotel) {
+        return Promise.reject(`Hotel not found by ID: ${hotelId}`);
+      }
+    }),
 
   // Optional image fields
   body("imageCover")
@@ -86,7 +94,13 @@ const validateUpdateRoom = [
   body("hotelId")
     .optional()
     .isUUID()
-    .withMessage("Hotel ID must be a valid UUID"),
+    .withMessage("Hotel ID must be a valid UUID")
+    .custom(async (hotelId) => {
+      const hotel = await Hotel.findByPk(hotelId);
+      if (!hotel) {
+        return Promise.reject(`Hotel not found by ID: ${hotelId}`);
+      }
+    }),
 
   // Optional image fields
   body("imageCover")

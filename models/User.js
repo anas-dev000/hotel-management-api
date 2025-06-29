@@ -83,12 +83,33 @@ const User = sequelize.define(
         key: "id",
       },
     },
+
+    passwordResetCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    passwordResetExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    passwordResetVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    passwordChangedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     tableName: "users",
     timestamps: true,
     paranoid: true,
-    indexes: [{ fields: ["hotelId"] }],
+    indexes: [
+      { fields: ["hotelId"] },
+      { fields: ["passwordResetCode"] },
+      { fields: ["passwordResetExpires"] },
+    ],
   }
 );
 

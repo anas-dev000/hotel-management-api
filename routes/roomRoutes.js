@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const roomController = require("../controllers/roomController");
-//const { protect, restrictTo } = require("../middlewares/auth");
+const { protect, restrictTo } = require("../middlewares/auth");
 
 const {
   validateCreateRoom,
@@ -13,7 +13,7 @@ router.get("/", roomController.getAllRooms);
 router.get("/:id", roomController.getRoom);
 
 // Admin-only routes
-//router.use(protect, restrictTo("admin"));
+router.use(protect, restrictTo("admin"));
 router.post("/", validateCreateRoom, roomController.createRoom);
 router.patch("/:id", validateUpdateRoom, roomController.updateRoom);
 router.delete("/:id", roomController.deleteRoom);

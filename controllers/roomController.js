@@ -1,7 +1,7 @@
 const expressAsyncHandler = require("express-async-handler");
 const APIFeatures = require("../utils/apiFeatures");
 const AppError = require("../utils/apiError");
-const Room = require("../models/Room");
+const {Room} = require("../models");
 
 /*
 - GET /api/rooms
