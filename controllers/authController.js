@@ -5,7 +5,6 @@ const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 const { User } = require("../models");
 const { Op } = require("sequelize");
-const jwt = require("jsonwebtoken");
 
 /*
 - POST /api/auth/signup

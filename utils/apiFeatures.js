@@ -1,8 +1,10 @@
 const { Op } = require("sequelize");
+const filterFields = require("../config/filterFields");
 
 class APIFeatures {
-  constructor(queryString) {
+  constructor(queryString, modelName) {
     this.queryString = queryString;
+    this.modelName = modelName; // example: 'rooms', 'users'
     this.queryOptions = {};
     this.paginationResult = {};
   }
@@ -12,61 +14,69 @@ class APIFeatures {
     const queryObj = { ...this.queryString };
     excluded.forEach((el) => delete queryObj[el]);
 
-    /*
+    /* EX :
     queryObj = {
-      location: 'Miami',
-      'starRating[gte]': '4'
-    }
-    */
-    const allowedFields = [
-      "location",
-      "starRating",
-      "price",
-      "name",
-      "description",
-      "roomType",
-      "availability",
-      "pricePerNight",
-      "capacity",
-    ];
-
+      pricePerNight[gte]: "100",
+      starRating[lt]: "4",
+      roomType: "single",
+      hotelId: "123"
+      }
+*/
+    const allowedFields = filterFields[this.modelName] || [];
     const where = {};
 
+    const opMap = {
+      gte: Op.gte,
+      gt: Op.gt,
+      lte: Op.lte,
+      lt: Op.lt,
+      ne: Op.ne,
+      eq: Op.eq,
+      in: Op.in,
+      nin: Op.notIn,
+      like: Op.like,
+      notLike: Op.notLike,
+    };
+
     for (const key in queryObj) {
+      const value = queryObj[key];
       const baseField = key.includes("[") ? key.split("[")[0] : key;
       if (!allowedFields.includes(baseField)) continue;
 
       if (key.includes("[")) {
-        const [field, operator] = key.split("[");
-        const cleanOperator = operator.replace("]", "");
+        const [field, operatorWithBracket] = key.split("[");
+        const operator = operatorWithBracket.replace("]", "");
 
-        const opMap = {
-          gte: Op.gte,
-          gt: Op.gt,
-          lte: Op.lte,
-          lt: Op.lt,
-        };
+        if (!opMap[operator]) continue;
 
-        if (!where[field]) where[field] = {}; // => where.starRating = {}
-        where[field][opMap[cleanOperator]] = queryObj[key]; // => where.starRating[Op.gte] = 4
+        if (!where[field]) where[field] = {};
+
+        where[field][opMap[operator]] =
+          operator === "in" || operator === "nin"
+            ? value.split(",") // in=n1,n2,n3
+            : value;
       } else {
-        where[key] = queryObj[key];
+        where[key] = value;
       }
     }
+
     /*
     Final result:
-    where = {
-      location: 'Miami',
-      starRating: {
-      [Op.gte]: '4'
-    }
-  }
+    where: {
+        pricePerNight: { [Op.gte]: 100 },
+        starRating: { [Op.lt]: 4 },
+        roomType: "single",
+        hotelId: "123"
+      }
     */
 
-    this.queryOptions.where = { ...this.queryOptions.where, ...where };
+    this.queryOptions.where = {
+      ...this.queryOptions.where,
+      ...where,
+    };
+
     return this;
   }
-
   search() {
     if (this.queryString.keyword) {
       const keyword = this.queryString.keyword;

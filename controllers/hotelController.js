@@ -11,7 +11,7 @@ const { Hotel } = require("../models");
   - Response: `{ status: "success", results, pagination, data: hotels }`
 */
 const getAllHotels = expressAsyncHandler(async (req, res, next) => {
-  const features = new APIFeatures(req.query)
+  const features = new APIFeatures(req.query, "hotels")
     .filter()
     .search()
     .sort()

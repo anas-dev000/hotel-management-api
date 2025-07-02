@@ -12,7 +12,7 @@ const { User } = require("../models");
 */
 
 const getAllUsers = expressAsyncHandler(async (req, res, next) => {
-  const features = new APIFeatures(req.query)
+  const features = new APIFeatures(req.query, "users")
     .filter()
     .sort()
     .limitedFields()
