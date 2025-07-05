@@ -1,7 +1,6 @@
 const { body } = require("express-validator");
 const validationMiddleware = require("../../middlewares/validatorMiddleware");
 const Hotel = require("../../models");
-const ApiError = require("../apiError");
 
 const validateCreateRoom = [
   body("name")

@@ -3,6 +3,7 @@ const hotelRoutes = require("./hotelRoutes");
 const roomRoutes = require("./roomRoutes");
 const userRoutes = require("./userRoutes");
 const authRoutes = require("./authRoutes");
+const bookingRoutes = require("./bookingRoutes");
 
 const allRoutes = (app) => {
   app.use("/api/v1", testRoutes);
@@ -10,6 +11,7 @@ const allRoutes = (app) => {
   app.use("/api/v1/rooms", roomRoutes);
   app.use("/api/v1/users", userRoutes);
   app.use("/api/v1/auth", authRoutes);
+  app.use("/api/v1/bookings", bookingRoutes);
 };
 
 module.exports = allRoutes;

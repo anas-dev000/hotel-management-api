@@ -13,6 +13,7 @@ class APIFeatures {
     const excluded = ["page", "sort", "limit", "fields", "keyword"];
     const queryObj = { ...this.queryString };
     excluded.forEach((el) => delete queryObj[el]);
+    if (Object.keys(this.queryString).length === 0) return this;
 
     /* EX :
     queryObj = {
@@ -77,21 +78,25 @@ class APIFeatures {
 
     return this;
   }
+
   search() {
     if (this.queryString.keyword) {
       const keyword = this.queryString.keyword;
+      const searchFields = {
+        hotels:["name", "description", "location"],
+        rooms: ["name", "description"],
+        users: ["name", "email"],
+        bookings: [], // Add support if needed
+      }[this.modelName] || ["name"];
 
-      const searchConditions = {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${keyword}%` } },
-          { description: { [Op.iLike]: `%${keyword}%` } },
-        ],
-      };
-
-      this.queryOptions.where = {
-        ...this.queryOptions.where,
-        ...searchConditions,
-      };
+      if (searchFields.length > 0) {
+        this.queryOptions.where = {
+          ...this.queryOptions.where,
+          [Op.or]: searchFields.map((field) => ({
+            [field]: { [Op.iLike]: `%${keyword}%` },
+          })),
+        };
+      }
     }
     return this;
   }
@@ -144,22 +149,22 @@ module.exports = APIFeatures;
 
 e.g: 
 
-GET /api/v1/hotels?location=Miami&starRating[gte]=4&keyword=deluxe&page=2&limit=5&sort=price&fields=name,location
+{{URL}}/api/v1/hotels?keyword=deluxe&location=Miami&starRating[lte]=3&sort=createdAt&page=1&limit=3&fields=name,location,starRating
 
 this.queryOptions = {
   where: {
     location: "Miami",
-    starRating: { [Op.gte]: 4 },
+    starRating: { [Op.lte]: 3 },
     [Op.or]: [
       { name: { [Op.iLike]: "%deluxe%" } },
-      { description: { [Op.iLike]: "%deluxe%" } }
-    ]
+      { description: { [Op.iLike]: "%deluxe%" } },
+    ],
   },
-  order: [["price", "ASC"]],
-  attributes: ["name", "location"],
-  limit: 5,
-  offset: 5
-}
+  order: [["createdAt", "ASC"]],
+  attributes: ["name", "location", "starRating"],
+  limit: 3,
+  offset: 0,
+};
 
 
 */

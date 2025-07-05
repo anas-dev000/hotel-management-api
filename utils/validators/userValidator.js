@@ -37,18 +37,20 @@ const validateCreateUser = [
     .optional()
     .isIn(["guest", "admin", "receptionist"])
     .withMessage("Role must be one of: guest, admin, receptionist"),
-  body("hotelId")
-    .optional()
-    .isUUID()
-    .withMessage("Hotel ID must be a valid UUID")
-    .custom(async (value) => {
-      if (value) {
-        const hotel = await Hotel.findByPk(value);
-        if (!hotel) {
-          return Promise.reject("Invalid hotel ID");
-        }
+  body("hotelId").custom(async (value, { req }) => {
+    if (req.body.role === "receptionist" && !value) {
+      throw new Error("Receptionist must have a hotelId");
+    }
+
+    if (value) {
+      const hotel = await Hotel.findByPk(value);
+      if (!hotel) {
+        return Promise.reject("Invalid hotel ID");
       }
-    }),
+    }
+
+    return true;
+  }),
   validationMiddleware,
 ];
 

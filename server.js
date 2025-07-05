@@ -7,11 +7,20 @@ require("dotenv").config();
 const { connectDB } = require("./config/dbConnection");
 
 const globalError = require("./middlewares/globalErrorHandler");
+const webhookController = require("./controllers/webhookController");
+
+const app = express();
+
+// Receive response from Stripe after successful payment.
+// Stripe must deliver the body raw, not disassembled.
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  webhookController.stripeWebhookHandler
+);
 
 //routes
 const allRoutes = require("./routes");
-
-const app = express();
 
 // Middleware for logging
 if (process.env.NODE_ENV !== "production") {
@@ -22,6 +31,7 @@ if (process.env.NODE_ENV !== "production") {
 // Middleware for security and performance
 app.use(helmet());
 app.use(cors());
+
 app.use(express.json({ limit: "20kb" }));
 
 // Rate limiting to prevent abuse
@@ -53,6 +63,10 @@ const startServer = async () => {
   const port = process.env.PORT || 3000;
   try {
     await connectDB();
+
+    // Start cron job after DB is connected
+    require("./utils/clearUnpaidBookings");
+
     app.listen(port, () => console.log(`Server running on port ${port}!`));
   } catch (error) {
     console.error("Error starting server:", error.message);

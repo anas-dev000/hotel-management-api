@@ -80,6 +80,10 @@ const Booking = sequelize.define(
       ),
       defaultValue: "pending",
     },
+    stripeSessionId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "bookings",

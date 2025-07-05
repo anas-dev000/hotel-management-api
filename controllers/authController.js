@@ -3,6 +3,7 @@ const AppError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+const { sendPasswordResetEmail } = require("../services/emailService");
 const { User } = require("../models");
 const { Op } = require("sequelize");
 
@@ -93,17 +94,12 @@ const forgotPassword = expressAsyncHandler(async (req, res, next) => {
   });
   await user.save();
 
-  // Send reset code via email
-  const message = `Your password reset code is: ${resetCode}\nThis code is valid for 10 minutes.`;
-
-  // Dealing with operation failure and returning values undefined
   try {
-    await sendEmail({
-      email: user.email,
-      subject: "Your password reset code (valid for 10 minutes)",
-      message,
+    await sendPasswordResetEmail({
+      userEmail: user.email,
+      resetCode,
     });
-  } catch (error) {
+  } catch (err) {
     user.passwordResetCode = undefined;
     user.passwordResetExpires = undefined;
     user.passwordResetVerified = undefined;
