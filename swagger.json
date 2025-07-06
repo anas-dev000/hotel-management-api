@@ -1,0 +1,2561 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Hotel Management API",
+    "description": "API for managing hotels, rooms, bookings, staff, warnings, and authentication in a hotel management system.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@hotelmanagement.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Hotel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sunset Resort"
+          },
+          "description": {
+            "type": "string",
+            "example": "A luxurious beachfront hotel with stunning views."
+          },
+          "location": {
+            "type": "string",
+            "example": "Miami, FL"
+          },
+          "imageCover": {
+            "type": "string",
+            "example": "https://s3.amazonaws.com/hotel-images/sunset-cover.jpg"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "https://s3.amazonaws.com/hotel-images/sunset-1.jpg"
+            }
+          },
+          "starRating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "example": 4
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          }
+        },
+        "required": ["name", "location"]
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "456e7890-f12c-34d5-b678-901234567890"
+          },
+          "name": {
+            "type": "string",
+            "example": "Deluxe Suite"
+          },
+          "description": {
+            "type": "string",
+            "example": "A spacious suite with ocean view."
+          },
+          "pricePerNight": {
+            "type": "number",
+            "format": "float",
+            "example": 150.00
+          },
+          "roomType": {
+            "type": "string",
+            "enum": ["single", "double", "suite"],
+            "example": "suite"
+          },
+          "availability": {
+            "type": "boolean",
+            "example": true
+          },
+          "capacity": {
+            "type": "integer",
+            "example": 2
+          },
+          "hotelId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "imageCover": {
+            "type": "string",
+            "example": "https://s3.amazonaws.com/room-images/deluxe-cover.jpg"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "https://s3.amazonaws.com/room-images/deluxe-1.jpg"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          },
+          "hotel": {
+            "$ref": "#/components/schemas/Hotel"
+          }
+        },
+        "required": ["name", "pricePerNight", "roomType", "capacity", "hotelId"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "789e0123-g45h-67i8-j901-234567890123"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890"
+          },
+          "nationality": {
+            "type": "string",
+            "example": "American"
+          },
+          "passportNumber": {
+            "type": "string",
+            "example": "AB1234567"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["guest", "admin", "receptionist"],
+            "example": "guest"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "description": "Indicates if the user account is active"
+          },
+          "warnings": {
+            "type": "integer",
+            "example": 0,
+            "description": "Number of warnings issued to the user (applies to guests only)"
+          },
+          "hotelId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          }
+        },
+        "required": ["name", "email", "role"]
+      },
+      "Booking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "789e0123-g45h-67i8-j901-234567890123"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "789e0123-g45h-67i8-j901-234567890123"
+          },
+          "roomId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "456e7890-f12c-34d5-b678-901234567890"
+          },
+          "checkInDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-10T14:00:00.000Z"
+          },
+          "checkOutDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-12T12:00:00.000Z"
+          },
+          "totalPrice": {
+            "type": "number",
+            "format": "float",
+            "example": 300.00
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": ["pending", "paid", "failed"],
+            "example": "pending"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["card", "cash"],
+            "example": "card"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["confirmed", "pending", "cancelled", "checked-in", "checked-out"],
+            "example": "pending"
+          },
+          "stripeSessionId": {
+            "type": "string",
+            "example": "cs_test_abc123"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-06T18:30:00.000Z"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "room": {
+            "$ref": "#/components/schemas/Room"
+          }
+        },
+        "required": ["userId", "roomId", "checkInDate", "checkOutDate", "totalPrice", "paymentMethod"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "fail"
+          },
+          "message": {
+            "type": "string",
+            "example": "No user found with that ID"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Register a new user with a specified role (guest, admin, or receptionist). Admin role creation restricted to existing admins.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe",
+                    "description": "User name, 3-100 characters"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com",
+                    "description": "Unique email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Password123!",
+                    "description": "Password, minimum 8 characters"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+1234567890",
+                    "description": "Optional phone number"
+                  },
+                  "nationality": {
+                    "type": "string",
+                    "example": "American",
+                    "description": "Optional nationality"
+                  },
+                  "passportNumber": {
+                    "type": "string",
+                    "example": "AB1234567",
+                    "description": "Optional passport number"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["guest", "admin", "receptionist"],
+                    "example": "guest",
+                    "description": "User role, defaults to 'guest'. Admin role restricted to admins."
+                  },
+                  "hotelId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000",
+                    "description": "Required for receptionist role, must be a valid hotel UUID"
+                  }
+                },
+                "required": ["name", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid input, email already in use)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (e.g., non-admin attempting to create admin user)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Log in a user",
+        "description": "Log in a user with email and password, returning a JWT token.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Password123!"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User logged in successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized (invalid email or password)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "summary": "Request a password reset code",
+        "description": "Request a 6-digit password reset code sent to the user's email.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  }
+                },
+                "required": ["email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reset code sent to email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Reset code sent to email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No user found with that email",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "500": {
+            "description": "Error sending email",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-reset-code": {
+      "post": {
+        "summary": "Verify password reset code",
+        "description": "Verify the 6-digit password reset code to obtain a reset token.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "123456",
+                    "description": "6-digit reset code"
+                  }
+                },
+                "required": ["code"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reset code verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "resetToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired reset code",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "patch": {
+        "summary": "Reset user password",
+        "description": "Reset the user's password using a valid reset token. Limited to 5 attempts per 10 minutes.",
+        "tags": ["Authentication"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPassword": {
+                    "type": "string",
+                    "example": "NewPassword123!",
+                    "description": "New password, minimum 8 characters"
+                  },
+                  "passwordConfirm": {
+                    "type": "string",
+                    "example": "NewPassword123!",
+                    "description": "Confirmation of new password"
+                  }
+                },
+                "required": ["newPassword", "passwordConfirm"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid or unverified reset code, same password)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized (invalid token)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many password reset attempts",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hotels": {
+      "get": {
+        "summary": "Get all hotels",
+        "description": "Retrieve a list of hotels with optional filtering, sorting, and pagination.",
+        "tags": ["Hotels"],
+        "parameters": [
+          {
+            "name": "location",
+            "in": "query",
+            "description": "Filter hotels by location",
+            "schema": {
+              "type": "string",
+              "example": "Miami"
+            }
+          },
+          {
+            "name": "starRating",
+            "in": "query",
+            "description": "Filter hotels by star rating",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of hotels per page",
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort hotels (e.g., 'name', '-starRating')",
+            "schema": {
+              "type": "string",
+              "example": "-starRating"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "Select specific fields (e.g., 'name,location')",
+            "schema": {
+              "type": "string",
+              "example": "name,location"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of hotels retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "results": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer", "example": 1 },
+                        "limit": { "type": "integer", "example": 10 },
+                        "total": { "type": "integer", "example": 50 },
+                        "totalPages": { "type": "integer", "example": 5 }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "hotels": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Hotel" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new hotel",
+        "description": "Create a new hotel. Restricted to admin users.",
+        "tags": ["Hotels"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Sunset Resort"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "A luxurious beachfront hotel."
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Miami, FL"
+                  },
+                  "imageCover": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/hotel-images/sunset-cover.jpg"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "https://s3.amazonaws.com/hotel-images/sunset-1.jpg"
+                    }
+                  },
+                  "starRating": {
+                    "type": "integer",
+                    "example": 4
+                  }
+                },
+                "required": ["name", "location"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Hotel created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "hotel": { "$ref": "#/components/schemas/Hotel" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hotels/{id}": {
+      "get": {
+        "summary": "Get a specific hotel",
+        "description": "Retrieve details of a specific hotel by its ID.",
+        "tags": ["Hotels"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the hotel",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hotel retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "hotel": { "$ref": "#/components/schemas/Hotel" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Hotel not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a hotel",
+        "description": "Update details of a specific hotel. Restricted to admin users.",
+        "tags": ["Hotels"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the hotel",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Sunset Resort Updated"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Updated description."
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Orlando, FL"
+                  },
+                  "imageCover": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/hotel-images/sunset-cover-updated.jpg"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "https://s3.amazonaws.com/hotel-images/sunset-2.jpg"
+                    }
+                  },
+                  "starRating": {
+                    "type": "integer",
+                    "example": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hotel updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "hotel": { "$ref": "#/components/schemas/Hotel" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Hotel not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a hotel",
+        "description": "Soft delete a specific hotel by its ID. Restricted to admin users.",
+        "tags": ["Hotels"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the hotel",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hotel deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Hotel deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Hotel not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms": {
+      "get": {
+        "summary": "Get all rooms",
+        "description": "Retrieve a list of rooms with optional filtering, sorting, and pagination.",
+        "tags": ["Rooms"],
+        "parameters": [
+          {
+            "name": "hotelId",
+            "in": "query",
+            "description": "Filter rooms by hotel ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          },
+          {
+            "name": "roomType",
+            "in": "query",
+            "description": "Filter rooms by room type",
+            "schema": {
+              "type": "string",
+              "enum": ["single", "double", "suite"],
+              "example": "suite"
+            }
+          },
+          {
+            "name": "pricePerNight",
+            "in": "query",
+            "description": "Filter rooms by price per night (e.g., pricePerNight[gte]=100)",
+            "schema": {
+              "type": "string",
+              "example": "gte=100"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of rooms per page",
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort rooms (e.g., 'pricePerNight', '-capacity')",
+            "schema": {
+              "type": "string",
+              "example": "-pricePerNight"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "Select specific fields (e.g., 'name,pricePerNight')",
+            "schema": {
+              "type": "string",
+              "example": "name,pricePerNight"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of rooms retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "results": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer", "example": 1 },
+                        "limit": { "type": "integer", "example": 10 },
+                        "total": { "type": "integer", "example": 50 },
+                        "totalPages": { "type": "integer", "example": 5 }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "rooms": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Room" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new room",
+        "description": "Create a new room. Restricted to admin users.",
+        "tags": ["Rooms"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Deluxe Suite"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "A spacious suite with ocean view."
+                  },
+                  "pricePerNight": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 150.00
+                  },
+                  "roomType": {
+                    "type": "string",
+                    "enum": ["single", "double", "suite"],
+                    "example": "suite"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "hotelId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                  },
+                  "imageCover": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/room-images/deluxe-cover.jpg"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "https://s3.amazonaws.com/room-images/deluxe-1.jpg"
+                    }
+                  }
+                },
+                "required": ["name", "pricePerNight", "roomType", "capacity", "hotelId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Room created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "room": { "$ref": "#/components/schemas/Room" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms/{id}": {
+      "get": {
+        "summary": "Get a specific room",
+        "description": "Retrieve details of a specific room by its ID.",
+        "tags": ["Rooms"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the room",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "456e7890-f12c-34d5-b678-901234567890"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Room retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "room": { "$ref": "#/components/schemas/Room" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a room",
+        "description": "Update details of a specific room. Restricted to admin users.",
+        "tags": ["Rooms"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the room",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "456e7890-f12c-34d5-b678-901234567890"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Deluxe Suite Updated"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Updated spacious suite with ocean view."
+                  },
+                  "pricePerNight": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 175.00
+                  },
+                  "roomType": {
+                    "type": "string",
+                    "enum": ["single", "double", "suite"],
+                    "example": "suite"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "hotelId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                  },
+                  "imageCover": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/room-images/deluxe-cover-updated.jpg"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "https://s3.amazonaws.com/room-images/deluxe-2.jpg"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Room updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "room": { "$ref": "#/components/schemas/Room" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a room",
+        "description": "Soft delete a specific room by its ID. Restricted to admin users.",
+        "tags": ["Rooms"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the room",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "456e7890-f12c-34d5-b678-901234567890"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Room deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Room deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Get all users",
+        "description": "Retrieve a list of users with optional filtering, sorting, and pagination. Restricted to admin users.",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Filter users by role",
+            "schema": {
+              "type": "string",
+              "enum": ["guest", "admin", "receptionist"],
+              "example": "admin"
+            }
+          },
+          {
+            "name": "hotelId",
+            "in": "query",
+            "description": "Filter users by hotel ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of users per page",
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort users (e.g., 'name', '-warnings')",
+            "schema": {
+              "type": "string",
+              "example": "name"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "Select specific fields (e.g., 'name,email,role')",
+            "schema": {
+              "type": "string",
+              "example": "name,email,role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "results": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer", "example": 1 },
+                        "limit": { "type": "integer", "example": 10 },
+                        "total": { "type": "integer", "example": 50 },
+                        "totalPages": { "type": "integer", "example": 5 }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "users": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/User"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new user",
+        "description": "Create a new user. Restricted to admin or receptionist users. Receptionists must specify a valid hotelId for receptionist role.",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Jane Doe",
+                    "description": "User name, 3-100 characters"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.doe@example.com",
+                    "description": "Unique email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Password123!",
+                    "description": "Password, minimum 8 characters"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+1234567890",
+                    "description": "Optional phone number"
+                  },
+                  "nationality": {
+                    "type": "string",
+                    "example": "Canadian",
+                    "description": "Optional nationality"
+                  },
+                  "passportNumber": {
+                    "type": "string",
+                    "example": "CD1234567",
+                    "description": "Optional passport number"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["guest", "admin", "receptionist"],
+                    "example": "receptionist",
+                    "description": "User role, defaults to 'guest'. Admin role restricted to admins."
+                  },
+                  "hotelId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000",
+                    "description": "Required for receptionist role, must be a valid hotel UUID"
+                  }
+                },
+                "required": ["name", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid input, email already in use, invalid hotelId)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (e.g., non-admin/receptionist attempting to create user)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Get a specific user",
+        "description": "Retrieve details of a specific user by their ID. Restricted to admin users or the user themselves.",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the user",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "789e0123-g45h-67i8-j901-234567890123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (user not authorized to access this data)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a user",
+        "description": "Update details of a specific user. Restricted to admin users or the user themselves. Non-admins cannot update role or hotelId.",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the user",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "789e0123-g45h-67i8-j901-234567890123"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Jane Doe Updated",
+                    "description": "User name, 3-100 characters"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.doe.updated@example.com",
+                    "description": "Unique email address"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+1234567890",
+                    "description": "Optional phone number"
+                  },
+                  "nationality": {
+                    "type": "string",
+                    "example": "Canadian",
+                    "description": "Optional nationality"
+                  },
+                  "passportNumber": {
+                    "type": "string",
+                    "example": "CD1234567",
+                    "description": "Optional passport number"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["guest", "admin", "receptionist"],
+                    "example": "receptionist",
+                    "description": "User role, can only be updated by admins"
+                  },
+                  "hotelId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000",
+                    "description": "Hotel ID, can only be updated by admins, required for receptionist role"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid input, email already in use)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (user not authorized to update this data)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user",
+        "description": "Soft delete a specific user by their ID. Restricted to admin users.",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the user",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "789e0123-g45h-67i8-j901-234567890123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/warnings": {
+      "post": {
+        "summary": "Add a warning to a guest",
+        "description": "Add a warning to a guest user, sending an email notification. Account is deactivated if warnings reach 3. Restricted to admin or receptionist users.",
+        "tags": ["Warnings"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the guest user",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "789e0123-g45h-67i8-j901-234567890123"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "example": "Late check-out without notice",
+                    "description": "Reason for issuing the warning"
+                  }
+                },
+                "required": ["reason"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Warning added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "warnings": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Updated number of warnings"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid input)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (user not authorized to issue warnings)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Guest not found or inactive",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to send warning email",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get warnings for a guest",
+        "description": "Retrieve the number of warnings for a specific guest user. Restricted to admin or receptionist users.",
+        "tags": ["Warnings"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the guest user",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "789e0123-g45h-67i8-j901-234567890123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Warnings retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "John Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "john.doe@example.com"
+                        },
+                        "warnings": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Number of warnings issued to the guest"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (user not authorized to view warnings)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Guest not found or inactive",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff": {
+      "post": {
+        "summary": "Create a new staff member",
+        "description": "Create a new staff member (admin or receptionist) with a generated 6-digit password reset code sent to their email. Restricted to admin users.",
+        "tags": ["Staff"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Jane Smith",
+                    "description": "Staff name, minimum 3 characters"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.smith@example.com",
+                    "description": "Unique email address"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "receptionist"],
+                    "example": "receptionist",
+                    "description": "Staff role, must be 'admin' or 'receptionist'"
+                  },
+                  "hotelId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000",
+                    "description": "Required hotel UUID for the staff member"
+                  }
+                },
+                "required": ["name", "email", "role", "hotelId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Staff created successfully, reset code sent to email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "staff": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid input, email already in use, invalid hotelId)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (non-admin attempting to create staff)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to send reset code email",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all staff members",
+        "description": "Retrieve a list of staff members (receptionists only) with optional filtering, sorting, and pagination. Restricted to admin or receptionist users. Receptionists can only view staff from their hotel.",
+        "tags": ["Staff"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "hotelId",
+            "in": "query",
+            "description": "Filter staff by hotel ID (optional for admins, ignored for receptionists)",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of staff per page",
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort staff (e.g., 'name', '-createdAt')",
+            "schema": {
+              "type": "string",
+              "example": "name"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "Select specific fields (e.g., 'name,email,role')",
+            "schema": {
+              "type": "string",
+              "example": "name,email,role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of staff retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "results": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer", "example": 1 },
+                        "limit": { "type": "integer", "example": 10 },
+                        "total": { "type": "integer", "example": 50 },
+                        "totalPages": { "type": "integer", "example": 5 }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "staff": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/User"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (user not authorized to view staff)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/{id}": {
+      "get": {
+        "summary": "Get a specific staff member",
+        "description": "Retrieve details of a specific staff member by their ID. Restricted to admin users or receptionists from the same hotel.",
+        "tags": ["Staff"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the staff member",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "789e0123-g45h-67i8-j901-234567890123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Staff member retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "staff": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (user not authorized to view this staff member)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Staff member not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

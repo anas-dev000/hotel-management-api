@@ -43,7 +43,27 @@ const sendPasswordResetEmail = async ({ userEmail, resetCode }) => {
   }
 };
 
+const sendWarningEmail = async ({ userEmail, reason, warningsCount }) => {
+  try {
+    const message = `You have received a warning due to: ${reason}. Total warnings: ${warningsCount}. ${
+      warningsCount >= 3 ? "Your account has been deactivated." : ""
+    }`;
+
+    await SendEmail({
+      email: userEmail,
+      subject: "Warning Issued",
+      message,
+    });
+  } catch (err) {
+    console.error(
+      `Error sending warning email to ${userEmail}: ${err.message}`
+    );
+    throw new Error("EMAIL_FAILED");
+  }
+};
+
 module.exports = {
   sendBookingConfirmationEmail,
   sendPasswordResetEmail,
+  sendWarningEmail,
 };

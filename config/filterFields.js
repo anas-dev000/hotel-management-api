@@ -2,7 +2,6 @@ module.exports = {
   rooms: [
     "location",
     "starRating",
-    "price",
     "name",
     "description",
     "roomType",

@@ -6,6 +6,9 @@ const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 const { connectDB } = require("./config/dbConnection");
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
+
 const globalError = require("./middlewares/globalErrorHandler");
 const webhookController = require("./controllers/webhookController");
 
@@ -18,6 +21,9 @@ app.post(
   express.raw({ type: "application/json" }),
   webhookController.stripeWebhookHandler
 );
+
+// Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //routes
 const allRoutes = require("./routes");

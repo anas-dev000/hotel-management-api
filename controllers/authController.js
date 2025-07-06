@@ -2,7 +2,6 @@ const expressAsyncHandler = require("express-async-handler");
 const AppError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
 const crypto = require("crypto");
-const sendEmail = require("../utils/sendEmail");
 const { sendPasswordResetEmail } = require("../services/emailService");
 const { User } = require("../models");
 const { Op } = require("sequelize");

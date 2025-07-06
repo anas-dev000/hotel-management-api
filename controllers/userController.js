@@ -18,6 +18,13 @@ const getAllUsers = expressAsyncHandler(async (req, res, next) => {
     .sort()
     .limitedFields()
     .paginate();
+
+  features.queryOptions = {
+    ...features.queryOptions,
+    attributes: {
+      exclude: ["password"], // Exclude password from response
+    },
+  };
   const users = await features.execute(User);
 
   res.status(200).json({
@@ -79,6 +86,13 @@ const createUser = expressAsyncHandler(async (req, res, next) => {
 
 const updateUser = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
+  const allowedFields = [
+    "name",
+    "email",
+    "phone",
+    "nationality",
+    "passportNumber",
+  ];
   const user = await User.findByPk(id);
   if (!user) {
     return next(new AppError("No user found with that ID", 404));
@@ -89,10 +103,24 @@ const updateUser = expressAsyncHandler(async (req, res, next) => {
     delete req.body.role;
     delete req.body.hotelId;
   }
+
+  // Allow role + hotelId لو admin
+  if (req.user.role === "admin") {
+    allowedFields.push("role", "hotelId");
+  }
+
+  // Filtering data coming from the user
+  const updateData = {};
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      updateData[field] = req.body[field];
+    }
+  });
+
   // Prevent updating password through this endpoint
   delete req.body.password;
 
-  await user.update(req.body);
+  await user.update(updateData);
   res.status(200).json({
     status: "success",
     data: { user: { ...user.toJSON(), password: undefined } },

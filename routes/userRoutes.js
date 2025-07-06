@@ -2,22 +2,16 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
 const { protect, restrictTo } = require("../middlewares/auth");
+const { User } = require("../models");
 
 const {
   validateCreateUser,
   validateUpdateUser,
 } = require("../utils/validators/userValidator");
+const expressAsyncHandler = require("express-async-handler");
 
 // Restricted To: Admin
 router.get("/", protect, restrictTo("admin"), userController.getAllUsers);
-
-// Restricted To: Admin, Self (user accessing their own data)
-router.get(
-  "/:id",
-  protect,
-  restrictTo("admin", "user"),
-  userController.getUser
-);
 
 // Admin or receptionist routes
 router.post(
@@ -27,6 +21,15 @@ router.post(
   validateCreateUser,
   userController.createUser
 );
+
+// Restricted To: Admin, Self (user accessing their own data)
+router.get(
+  "/:id",
+  protect,
+  restrictTo("admin", "user"),
+  userController.getUser
+);
+
 router.patch(
   "/:id",
   protect,

@@ -104,11 +104,12 @@ const User = sequelize.define(
   {
     tableName: "users",
     timestamps: true,
-    paranoid: true,
+    paranoid: false,
     indexes: [
       { fields: ["hotelId"] },
       { fields: ["passwordResetCode"] },
       { fields: ["passwordResetExpires"] },
+      { fields: ["warnings"] },
     ],
   }
 );
