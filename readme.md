@@ -2,135 +2,102 @@
 
 ## Overview
 
-The **Hotel Management System API** is a scalable and modular RESTful API built with **Node.js**, **Express**, and **PostgreSQL** using **Sequelize** ORM. It supports hotel operations such as room management, user authentication, bookings, payments via Stripe, and admin analytics. Built with clean code practices, role-based access, and full documentation.
+A scalable RESTful API for managing hotels, rooms, and bookings, built with **Node.js**, **Express.js**, **Sequelize**, and **PostgreSQL**. It features role-based access control, secure **Stripe** payments, **Nodemailer** email notifications, and **Swagger** documentation. Designed with clean code, modular structure, Sequelize transactions, and robust error handling for reliability and maintainability.
 
----
+## Features
 
-## Project Structure
+- 🏨 **Role-Based Access**: Guests book rooms, receptionists manage hotel-specific bookings, admins control all resources.
+- 🔎 **Advanced Querying**: Filtering (e.g., location, room type, price), sorting, and pagination for efficient data retrieval.
+- 💳 **Secure Payments**: Stripe integration with webhooks for real-time booking updates.
+- 📧 **Email Notifications**: Automated confirmations and cancellations via Nodemailer.
+- ⏰ **Cron Jobs**: Auto-cancel unpaid bookings after 15 minutes.
+- 📜 **Swagger Documentation**: Clear API endpoints at `/api-docs`.
+- 🛠 **Clean Code**: Modular structure, Sequelize transactions for data integrity, and standardized error handling.
 
-```
-Hotel-Management-API/
-├── config/
-├── controllers/
-├── middlewares/
-├── models/
-├── routes/
-├── utils/
-├── uploads/
-├── .env
-├── package.json
-├── server.js
-├── swagger.js
-```
+## Technologies Used
 
-> Detailed structure explained in the Project Overview section.
+- **Node.js**, **Express.js**: Backend framework
+- **Sequelize**, **PostgreSQL**: Database and ORM
+- **JWT**, **bcryptjs**: Authentication and password hashing
+- **Stripe**: Payment processing with webhooks
+- **Nodemailer**: Email notifications
+- **Cron**: Scheduled tasks
+- **Swagger**: API documentation
+- **Helmet**, **CORS**, **Rate Limiting**: Security and performance
 
----
 
 ## Setup Instructions
 
 ### 1. Clone Repository
-
 ```bash
 git clone https://github.com/Anas-dev000/hotel-management-api.git
 cd hotel-management-api
 ```
 
 ### 2. Install Dependencies
-
 ```bash
 npm install
 ```
 
 ### 3. Configure Environment Variables
-
 Create a `.env` file:
-
 ```env
-PORT=3000
-DB_URL=your_postgres_connection_string
-JWT_SECRET=your_secret_key
-EMAIL_USER=your_email
-EMAIL_PASS=your_password
-STRIPE_SECRET_KEY=your_stripe_key
+PORT=???????
+PGConnectionString=???????
+JWT_SECRET_KEY=???????
+JWT_EXPIRE_TIME=???????
+EMAIL_HOST=???????
+EMAIL_PORT=???????
+EMAIL_USER=???????
+EMAIL_PASSWORD=???????
+STRIPE_SECRET_KEY=?????
+STRIPE_WEBHOOK_SECRET=???????
+BASE_URL=???????
 ```
 
-### 4. Run the App
+### 4. Set Up Database
+- Ensure PostgreSQL is running.
+- Create database: `createdb Hotel-Management-System`
+- Run migrations: `npx sequelize-cli db:migrate`
 
+### 5. Run the Application
 ```bash
 npm run dev
 ```
 
----
+### 6. Access API Documentation
+- Open `http://localhost:3000/api-docs` for Swagger UI.
 
-## API Documentation
+## API Endpoints
 
-API is documented with **Swagger**.
+- **Hotels**: CRUD (`/hotels`, `/hotels/:id`) with filtering (location, starRating).
+- **Rooms**: Manage rooms (`/rooms`, `/rooms/:id`) with filtering (hotelId, roomType, price).
+- **Bookings**: Create/manage bookings (`/bookings`, `/bookings/:id`), check availability (`/bookings/available-rooms`), handle Stripe payments (`/bookings/success`, `/bookings/cancel`).
 
-- **Run server**
-- Visit: `http://localhost:3000/api-docs`
-
----
-
-## Technologies Used
-
-- **Node.js**, **Express.js**
-- **PostgreSQL** with **Sequelize ORM**
-- **JWT** Authentication + **bcryptjs**
-- **Stripe API** (Payments)
-- **Multer + Sharp** (Image upload/resize)
-- **Nodemailer** (Emails)
-- **Swagger** (API docs)
-- **Helmet**, **CORS**, **Rate Limiting** (Security)
-
----
+Test endpoints via Swagger UI or Postman.
 
 ## Roles & Permissions
 
-- **Guest**: Register, book, update profile
-- **Receptionist**: Manage rooms/bookings (assigned hotel only)
-- **Admin**: Full access (users, hotels, analytics)
-
----
+- **Guest**: Book rooms, update profile.
+- **Receptionist**: Manage bookings/rooms for assigned hotel.
+- **Admin**: Full control over hotels, rooms, bookings, and users.
 
 ## Testing
 
-Use Postman or Swagger UI to test all endpoints. Full list of routes included in the main documentation.
-
----
-
-## Admin Features
-
-- Manage hotels, users, and rooms
-- View analytics (occupancy, revenue)
-- Add/remove staff
-
----
-
-## Tasks Overview
-
-| Task   | Description                                                 |
-| ------ | ----------------------------------------------------------- |
-| Task 1 | Setup DB & define Sequelize models                          |
-| Task 2 | Implement auth with JWT, signup/login/forget/reset password |
-| Task 3 | CRUD for rooms with images                                  |
-| Task 4 | Booking system + Stripe integration                         |
-| Task 5 | Hotel management (admin only)                               |
-| Task 6 | Analytics for admins                                        |
-| Task 7 | Swagger documentation setup                                 |
-
----
+- Use **Swagger UI** (`/api-docs`) for interactive testing.
+- Example (create booking):
+  ```bash
+  curl -X POST http://localhost:3000/api/v1/bookings \
+  -H "Authorization: Bearer <your_jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"roomId":"456e7890-f12c-34d5-b678-901234567890","checkInDate":"2025-07-10T14:00:00.000Z","checkOutDate":"2025-07-12T12:00:00.000Z","paymentMethod":"card"}'
+  ```
 
 ## Contribution
 
-This project follows clean code principles and modularity. Open to contributions and improvements.
+Contributions are welcome! Follow clean code practices and submit pull requests. Open an issue for major changes.
+
 
 ---
 
-## License
-
-MIT
-
----
-
-> Built by Anas
+*Built by Anas*
